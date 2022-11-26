@@ -68,11 +68,12 @@ async function run() {
     };
     // verifySeller
     //verifySeller
-    const verifyBuyer = async (req, res, next) => {
-      const decodedEmail = req.decoded.email;
-      const query = { email: decodedEmail };
-      const user = await userCollection.findOne(query);
-    };
+    // const verifyBuyer = async (req, res, next) => {
+    //   const decodedEmail = req.decoded.email;
+    //   const query = { email: decodedEmail };
+    //   const user = await userCollection.findOne(query);
+    //   if(se)
+    // };
     //verifySeller
     app.get("/category", async (req, res) => {
       const query = {};
@@ -138,19 +139,19 @@ async function run() {
       res.send(result);
     });
 
-    app.delete("/users/:id", verifyJWT, async (req, res) => {
+    app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
 
-    app.post("/myOrder", verifyJWT, async (req, res) => {
+    app.post("/myOrder", async (req, res) => {
       const myOrder = req.body;
       const result = await myBooking.insertOne(myOrder);
       res.send(result);
     });
-    app.get("/myOrder", verifyJWT, async (req, res) => {
+    app.get("/myOrder", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await myBooking.find(query).toArray();
