@@ -49,7 +49,6 @@ async function run() {
       const decodedEmail = req.decoded.email;
       const query = { email: decodedEmail };
       const user = await userCollection.findOne(query);
-
       if (user?.status !== "admin") {
         return res.status(403).send({ message: "forbidden access" });
       }
@@ -57,6 +56,19 @@ async function run() {
     };
     // verifyAdmin
 
+    // verifySeller
+    const verifySeller = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "Seller") {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+    // verifySeller
+    //verifySeller
+    //verifySeller
     app.get("/category", async (req, res) => {
       const query = {};
       const users = await Category.find(query).toArray();
@@ -96,6 +108,15 @@ async function run() {
       res.send({ isAdmin: user?.status === "admin" });
     });
     // admin
+
+    // seller
+    app.get("/users/Seller/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isSeller: user?.role === "Seller" });
+    });
+    // seller
 
     app.get("/users", async (req, res) => {
       const role = req.query.role;
