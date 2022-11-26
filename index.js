@@ -17,6 +17,27 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+// verifyAdmin
+
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send("unauthorized access");
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
+// verifyAdmin
+
 async function run() {
   try {
     const Category = client.db("reVisual").collection("category");
@@ -41,9 +62,11 @@ async function run() {
       res.send(allProducts);
     });
 
-    app.get("/allProduct", async (req, res) => {
+    app.get("/allMyProduct", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
+      const allMyProduct = await allProduct.find(query).toArray();
+      res.send(allMyProduct);
     });
 
     app.post("/users", async (req, res) => {
@@ -74,6 +97,19 @@ async function run() {
       const query = { email: email };
       const result = await myBooking.find(query).toArray();
       res.send(result);
+    });
+
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user) {
+        const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+          expiresIn: "1d",
+        });
+        return res.send({ accessToken: token });
+      }
+      res.status(403).send({ accessToken: "" });
     });
   } finally {
   }
