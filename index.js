@@ -117,7 +117,9 @@ async function run() {
       res.send({ isSeller: user?.role === "Seller" });
     });
     // seller
-
+    //buyer
+    app.get("/users/Seller/:email", async);
+    //buyer
     app.get("/users", async (req, res) => {
       const role = req.query.role;
       const query = { role: role };
