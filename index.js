@@ -68,6 +68,11 @@ async function run() {
     };
     // verifySeller
     //verifySeller
+    const verifyBuyer = async (req, res, next) => {
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await userCollection.findOne(query);
+    };
     //verifySeller
     app.get("/category", async (req, res) => {
       const query = {};
@@ -108,7 +113,6 @@ async function run() {
       res.send({ isAdmin: user?.status === "admin" });
     });
     // admin
-
     // seller
     app.get("/users/Seller/:email", async (req, res) => {
       const email = req.params.email;
@@ -117,9 +121,16 @@ async function run() {
       res.send({ isSeller: user?.role === "Seller" });
     });
     // seller
-    //buyer
-    app.get("/users/Seller/:email", async);
-    //buyer
+
+    // buyer
+    app.get("/users/Buyer/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isBuyer: user?.role === "Buyer" });
+    });
+    // buyer
+
     app.get("/users", async (req, res) => {
       const role = req.query.role;
       const query = { role: role };
