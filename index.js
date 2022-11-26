@@ -82,17 +82,28 @@ async function run() {
       res.send(allMyProduct);
     });
 
-    app.post("/users", verifyJWT, async (req, res) => {
+    app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
-    app.get("/users", verifyJWT, async (req, res) => {
+
+    // admin
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await userCollection.findOne(query);
+      res.send({ isAdmin: user?.status === "admin" });
+    });
+    // admin
+
+    app.get("/users", async (req, res) => {
       const role = req.query.role;
       const query = { role: role };
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
+
     app.delete("/users/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
