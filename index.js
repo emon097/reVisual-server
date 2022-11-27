@@ -93,7 +93,7 @@ async function run() {
       res.send(allProducts);
     });
 
-    app.get("/allMyProduct", verifyJWT, async (req, res) => {
+    app.get("/allMyProduct", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const allMyProduct = await allProduct.find(query).toArray();
@@ -135,6 +135,13 @@ async function run() {
     app.get("/users", async (req, res) => {
       const role = req.query.role;
       const query = { role: role };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/verification", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
       const result = await userCollection.find(query).toArray();
       res.send(result);
     });
