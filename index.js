@@ -216,12 +216,26 @@ async function run() {
       const result = await myBooking.insertOne(myOrder);
       res.send(result);
     });
+
     app.get("/myOrder", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await myBooking.find(query).toArray();
       res.send(result);
     });
+
+    // myBookings
+
+    app.get("/availableProducts", async (req, res) => {
+      const quantity = req.query.quantity;
+      const query = {};
+      const availableQuery = { availableProduct: quantity };
+      const allProducts = await allProduct.find(query).toArray();
+      const alreadyBooked = await myBooking.find(availableQuery).toArray();
+      allProducts.forEach();
+    });
+
+    // myBookings
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
