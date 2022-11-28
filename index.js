@@ -93,12 +93,46 @@ async function run() {
       res.send(allProducts);
     });
 
+    // allMyProduct
+
     app.get("/allMyProduct", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const allMyProduct = await allProduct.find(query).toArray();
       res.send(allMyProduct);
     });
+
+    app.delete("/allMyProduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await allProduct.deleteOne(query);
+      res.send(result);
+    });
+
+    // allMyProduct
+
+    // Advertisement
+    app.put("/advertisement/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const option = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          advertisement: "advertised",
+        },
+      };
+      const result = await allProduct.updateOne(filter, updatedDoc, option);
+      res.send(result);
+    });
+
+    app.get("/showAdvertisement", async (req, res) => {
+      const advertisement = req.query.advertisement;
+      const query = { advertisement: advertisement };
+      const result = await allProduct.find(query).toArray();
+      res.send(result);
+    });
+
+    // Advertisement
 
     app.post("/users", async (req, res) => {
       const user = req.body;
