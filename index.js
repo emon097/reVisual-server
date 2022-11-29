@@ -94,7 +94,7 @@ async function run() {
       const allProducts = await allProduct.find(query).toArray();
       res.send(allProducts);
     });
-  
+
     // allMyProduct
 
     app.get("/allMyProduct", async (req, res) => {
@@ -281,27 +281,6 @@ async function run() {
       const result = await myBooking.find(query).toArray();
       res.send(result);
     });
-    // myBuyer
-    // app.get("/availableProducts", async (req, res) => {
-    //   const quantity = req.query.quantity;
-    //   const query = {};
-    //   const availableQuery = { availableProduct: quantity };
-    //   const allProducts = await allProduct.find(query).toArray();
-    //   const alreadyBuy = await myBooking.find(availableQuery).toArray();
-    //   allProducts.forEach((options) => {
-    //     const available = alreadyBuy.filter(
-    //       (soldOuts) => soldOuts.productName === options.name
-    //     );
-    //     const soldOut = available.map((soldOuts) => soldOuts.quantitys);
-    //     const remainingSlots = options.quantity.filter(
-    //       (quantit) => !soldOut.includes(quantit)
-    //     );
-
-    //     options.quantity = remainingSlots;
-    //   });
-    // });
-
-    // myBookings
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
