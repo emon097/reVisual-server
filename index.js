@@ -90,11 +90,11 @@ async function run() {
 
     app.get("/allProduct", async (req, res) => {
       const category = req.query.category;
-      const query = { category: category };
+      const query = { category: category, paid: false };
       const allProducts = await allProduct.find(query).toArray();
       res.send(allProducts);
     });
-
+  
     // allMyProduct
 
     app.get("/allMyProduct", async (req, res) => {
@@ -249,17 +249,30 @@ async function run() {
     app.post("/payment", async (req, res) => {
       const payment = req.body;
       const result = await paymentCollection.insertOne(payment);
-      const id = payment.BookingId;
+      const id = payment.productId;
+      console.log(id);
       const filter = { _id: ObjectId(id) };
       const updatedDoc = {
         $set: {
           paid: true,
         },
       };
+
       const updatedResult = await allProduct.updateOne(filter, updatedDoc);
+      const bookingsId = payment.bookingId;
+      const filterBooking = { _id: ObjectId(bookingsId) };
+      const updatedDocBookings = {
+        $set: {
+          paid: true,
+        },
+      };
+
+      const MyBookings = await myBooking.updateOne(
+        filterBooking,
+        updatedDocBookings
+      );
       res.send(result);
     });
-
     // myBookings
     // myBuyer
     app.get("/myBuyer", async (req, res) => {
