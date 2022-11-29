@@ -5,12 +5,14 @@ const port = process.env.PORT || 5000;
 const app = express();
 
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.STRIPE_KEY);
 
 // middleware
 app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { Await } = require("react-router-dom");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.k9jkjo0.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -43,7 +45,7 @@ async function run() {
     const allProduct = client.db("reVisual").collection("allProducts");
     const myBooking = client.db("reVisual").collection("myBooking");
     const userCollection = client.db("reVisual").collection("user");
-
+    const paymentCollection = client.db("reVisual").collection("payment");
     // verifyAdmin
     const verifyAdmin = async (req, res, next) => {
       const decodedEmail = req.decoded.email;
@@ -96,12 +98,11 @@ async function run() {
     // allMyProduct
 
     app.get("/allMyProduct", async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
+      const sellerEmail = req.query.sellerEmail;
+      const query = { sellerEmail: sellerEmail };
       const allMyProduct = await allProduct.find(query).toArray();
       res.send(allMyProduct);
     });
-
     app.delete("/allMyProduct/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -224,16 +225,68 @@ async function run() {
       res.send(result);
     });
 
-    // myBookings
-
-    app.get("/availableProducts", async (req, res) => {
-      const quantity = req.query.quantity;
-      const query = {};
-      const availableQuery = { availableProduct: quantity };
-      const allProducts = await allProduct.find(query).toArray();
-      const alreadyBooked = await myBooking.find(availableQuery).toArray();
-      allProducts.forEach();
+    app.get("/paymentRoute/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const paymentShow = await myBooking.findOne(query);
+      res.send(paymentShow);
     });
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const booking = req.body;
+      const price = booking.sellingPrice;
+      const amount = price * 100;
+      const paymentIntent = await stripe.paymentIntents.create({
+        currency: "usd",
+        amount: amount,
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    app.post("/payment", async (req, res) => {
+      const payment = req.body;
+      const result = await paymentCollection.insertOne(payment);
+      const id = payment.BookingId;
+      const filter = { _id: ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          paid: true,
+        },
+      };
+      const updatedResult = await allProduct.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // myBookings
+    // myBuyer
+    app.get("/myBuyer", async (req, res) => {
+      const selleremail = req.query.selleremail;
+      const query = { selleremail: selleremail };
+      const result = await myBooking.find(query).toArray();
+      res.send(result);
+    });
+    // myBuyer
+    // app.get("/availableProducts", async (req, res) => {
+    //   const quantity = req.query.quantity;
+    //   const query = {};
+    //   const availableQuery = { availableProduct: quantity };
+    //   const allProducts = await allProduct.find(query).toArray();
+    //   const alreadyBuy = await myBooking.find(availableQuery).toArray();
+    //   allProducts.forEach((options) => {
+    //     const available = alreadyBuy.filter(
+    //       (soldOuts) => soldOuts.productName === options.name
+    //     );
+    //     const soldOut = available.map((soldOuts) => soldOuts.quantitys);
+    //     const remainingSlots = options.quantity.filter(
+    //       (quantit) => !soldOut.includes(quantit)
+    //     );
+
+    //     options.quantity = remainingSlots;
+    //   });
+    // });
 
     // myBookings
 
