@@ -12,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const { Await } = require("react-router-dom");
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.k9jkjo0.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -46,37 +46,7 @@ async function run() {
     const myBooking = client.db("reVisual").collection("myBooking");
     const userCollection = client.db("reVisual").collection("user");
     const paymentCollection = client.db("reVisual").collection("payment");
-    // verifyAdmin
-    const verifyAdmin = async (req, res, next) => {
-      const decodedEmail = req.decoded.email;
-      const query = { email: decodedEmail };
-      const user = await userCollection.findOne(query);
-      if (user?.status !== "admin") {
-        return res.status(403).send({ message: "forbidden access" });
-      }
-      next();
-    };
-    // verifyAdmin
 
-    // verifySeller
-    const verifySeller = async (req, res, next) => {
-      const decodedEmail = req.decoded.email;
-      const query = { email: decodedEmail };
-      const user = await userCollection.findOne(query);
-      if (user?.role !== "Seller") {
-        return res.status(403).send({ message: "forbidden access" });
-      }
-      next();
-    };
-    // verifySeller
-    //verifySeller
-    // const verifyBuyer = async (req, res, next) => {
-    //   const decodedEmail = req.decoded.email;
-    //   const query = { email: decodedEmail };
-    //   const user = await userCollection.findOne(query);
-    //   if(se)
-    // };
-    //verifySeller
     app.get("/category", async (req, res) => {
       const query = {};
       const users = await Category.find(query).toArray();
@@ -94,8 +64,6 @@ async function run() {
       const allProducts = await allProduct.find(query).toArray();
       res.send(allProducts);
     });
-
-    // allMyProduct
 
     app.get("/allMyProduct", async (req, res) => {
       const sellerEmail = req.query.sellerEmail;
@@ -281,6 +249,27 @@ async function run() {
       const result = await myBooking.find(query).toArray();
       res.send(result);
     });
+    // myBuyer
+    // app.get("/availableProducts", async (req, res) => {
+    //   const quantity = req.query.quantity;
+    //   const query = {};
+    //   const availableQuery = { availableProduct: quantity };
+    //   const allProducts = await allProduct.find(query).toArray();
+    //   const alreadyBuy = await myBooking.find(availableQuery).toArray();
+    //   allProducts.forEach((options) => {
+    //     const available = alreadyBuy.filter(
+    //       (soldOuts) => soldOuts.productName === options.name
+    //     );
+    //     const soldOut = available.map((soldOuts) => soldOuts.quantitys);
+    //     const remainingSlots = options.quantity.filter(
+    //       (quantit) => !soldOut.includes(quantit)
+    //     );
+
+    //     options.quantity = remainingSlots;
+    //   });
+    // });
+
+    // myBookings
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
