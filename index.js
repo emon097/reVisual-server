@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).send("unauthorized access");
+    return res.status(401).send({ message: "unauthorized access" });
   }
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
@@ -58,14 +58,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/allProduct", async (req, res) => {
+    app.get("/allProduct", verifyJWT, async (req, res) => {
       const category = req.query.category;
       const query = { category: category, paid: false };
       const allProducts = await allProduct.find(query).toArray();
       res.send(allProducts);
     });
-
-    app.get("/allMyProduct", async (req, res) => {
+    app.get("/allMyProduct", verifyJWT, async (req, res) => {
       const sellerEmail = req.query.sellerEmail;
       const query = { sellerEmail: sellerEmail };
       const allMyProduct = await allProduct.find(query).toArray();
@@ -94,21 +93,48 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/showAdvertisement", async (req, res) => {
+    app.get("/showAdvertisement", verifyJWT, async (req, res) => {
       const advertisement = req.query.advertisement;
-      const query = { advertisement: advertisement };
+      const query = { advertisement: advertisement, paid: false };
       const result = await allProduct.find(query).toArray();
       res.send(result);
     });
 
     // Advertisement
-
+    // users
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
 
+    app.post("/googleSignUp", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      const query = {
+        email: user.email,
+      };
+      const alreadyRegister = await userCollection.find(query).toArray();
+      if (alreadyRegister.length) {
+        return res.send({ acknowledged: false });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+    app.get("/users", verifyJWT, async (req, res) => {
+      const role = req.query.role;
+      const query = { role: role };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/profile", verifyJWT, async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await userCollection.find(query).toArray();
+      res.send(result);
+    });
+    // users
     // admin
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
@@ -135,20 +161,6 @@ async function run() {
     });
     // buyer
 
-    app.get("/users", async (req, res) => {
-      const role = req.query.role;
-      const query = { role: role };
-      const result = await userCollection.find(query).toArray();
-      res.send(result);
-    });
-
-    app.get("/verification", async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
-      const result = await userCollection.find(query).toArray();
-      res.send(result);
-    });
-
     app.put("/users/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
@@ -166,13 +178,6 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/profile", async (req, res) => {
-      const email = req.query.email;
-      const query = { email: email };
-      const result = await userCollection.find(query).toArray();
-      res.send(result);
-    });
-
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -182,18 +187,28 @@ async function run() {
 
     app.post("/myOrder", async (req, res) => {
       const myOrder = req.body;
+      console.log(myOrder);
+      const query = {
+        email: myOrder.email,
+        productId: myOrder.productId,
+      };
+      const alreadyBooked = await myBooking.find(query).toArray();
+      if (alreadyBooked.length) {
+        const message = "You Have Already Ordered Now You Can Pay It";
+        return res.send({ acknowledged: false, message });
+      }
       const result = await myBooking.insertOne(myOrder);
       res.send(result);
     });
 
-    app.get("/myOrder", async (req, res) => {
+    app.get("/myOrder", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const result = await myBooking.find(query).toArray();
       res.send(result);
     });
 
-    app.get("/paymentRoute/:id", async (req, res) => {
+    app.get("/paymentRoute/:id", verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const paymentShow = await myBooking.findOne(query);
@@ -243,33 +258,13 @@ async function run() {
     });
     // myBookings
     // myBuyer
-    app.get("/myBuyer", async (req, res) => {
+    app.get("/myBuyer", verifyJWT, async (req, res) => {
       const selleremail = req.query.selleremail;
       const query = { selleremail: selleremail };
       const result = await myBooking.find(query).toArray();
       res.send(result);
     });
     // myBuyer
-    // app.get("/availableProducts", async (req, res) => {
-    //   const quantity = req.query.quantity;
-    //   const query = {};
-    //   const availableQuery = { availableProduct: quantity };
-    //   const allProducts = await allProduct.find(query).toArray();
-    //   const alreadyBuy = await myBooking.find(availableQuery).toArray();
-    //   allProducts.forEach((options) => {
-    //     const available = alreadyBuy.filter(
-    //       (soldOuts) => soldOuts.productName === options.name
-    //     );
-    //     const soldOut = available.map((soldOuts) => soldOuts.quantitys);
-    //     const remainingSlots = options.quantity.filter(
-    //       (quantit) => !soldOut.includes(quantit)
-    //     );
-
-    //     options.quantity = remainingSlots;
-    //   });
-    // });
-
-    // myBookings
 
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
