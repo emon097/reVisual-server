@@ -93,8 +93,8 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/showAdvertisement", verifyJWT, async (req, res) => {
-      const advertisement = req.query.advertisement;
+    app.get("/showAdvertisement", async (req, res) => {
+      const advertisement = req.query?.advertisement;
       const query = { advertisement: advertisement, paid: false };
       const result = await allProduct.find(query).toArray();
       res.send(result);
@@ -110,7 +110,6 @@ async function run() {
 
     app.post("/googleSignUp", async (req, res) => {
       const user = req.body;
-      console.log(user);
       const query = {
         email: user.email,
       };
@@ -143,6 +142,7 @@ async function run() {
       res.send({ isAdmin: user?.status === "admin" });
     });
     // admin
+
     // seller
     app.get("/users/Seller/:email", async (req, res) => {
       const email = req.params.email;
@@ -284,7 +284,7 @@ async function run() {
 run().catch((e) => console.log(e));
 
 app.get("/", (req, res) => {
-  res.send("reVisual is Runing");
+  res.send("reVisual is Running");
 });
 
 app.listen(port, () => {
